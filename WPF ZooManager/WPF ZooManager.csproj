@@ -96,6 +96,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="README.md" />
     <None Include="ZooDBDataSet.xsc">
       <DependentUpon>ZooDBDataSet.xsd</DependentUpon>
     </None>
