@@ -38,7 +38,7 @@
         <!-- Row 2 & 3 - StackPanel with ListBox and Button for All Animals -->
         <StackPanel Grid.Row="1" Grid.RowSpan="5" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Height="396">
             <Button Click="addAnimalToZoo_Cick" Content="Add Animal to Zoo" Width="167" Height="30" Margin="0,10,0,5"/>
-            <ListBox x:Name="listAllAnimals" Height="351" Width="167" Margin="0,0,0,10"/>
+            <ListBox x:Name="listAllAnimals" Height="351" Width="167" Margin="0,0,0,10" SelectionChanged="listAllAnimals_SelectionChanged"/>
         </StackPanel>
 
         <!-- Row 4 - Buttons for Zoo management -->
@@ -56,7 +56,7 @@
 
         <StackPanel Grid.RowSpan="1" Grid.Row="6" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center">
             <Button Click="AddZoo_Click" Content="Add Zoo" Width="167" Height="30" Margin="0,5,0,0"/>
-            <Button Content="Update Zoo" Width="167" Height="30" Margin="0,5,0,0"/>
+            <Button Click="updateZoo_Cick" Content="Update Zoo" Width="167" Height="30" Margin="0,5,0,0"/>
         </StackPanel>
 
         <!-- Row 4 - Buttons for Associated Animals management -->
@@ -68,7 +68,7 @@
 
         <StackPanel Grid.RowSpan="2" Grid.Row="6" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center">
             <Button Click="AddAnimal_Click" Content="Add Animal" Width="167" Height="30" Margin="0,5,0,0"/>
-            <Button Content="Update Animal" Width="167" Height="30" Margin="0,5,0,0"/>
+            <Button Click="updateAnimal_Cick" Content="Update Animal" Width="167" Height="30" Margin="0,5,0,0"/>
         </StackPanel>
 
         <!-- Row 5 - Delete Animal Button for All Animals -->

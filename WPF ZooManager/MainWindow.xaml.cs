@@ -130,6 +130,7 @@ namespace WPF_ZooManager
             //MessageBox.Show("List of Zoos were cliked!");
             //MessageBox.Show(listZoos.SelectedValue.ToString());
             ShowAssociatedAnimals();
+            ShowSelectedZooInTextBox();
         }
 
         private void DeleteZoo_Click(object sender, RoutedEventArgs e)
@@ -177,6 +178,70 @@ namespace WPF_ZooManager
             }
         }
 
+        private void ShowSelectedZooInTextBox()
+        {
+            try
+            {
+
+                string query = "select location from zoo where Id = @ZooId";
+
+                SqlCommand sqlCommad = new SqlCommand(query, sqlConnection);
+
+                // the SqlAdapter can be imagined like an Interface to make Tables usable by C#-Objects
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommad);
+
+                using (sqlDataAdapter)
+                {
+
+                    //hand over specific ID, which is based what we have selected in our list box
+                    sqlCommad.Parameters.AddWithValue("@ZooId", listZoos.SelectedValue);
+
+                    DataTable zooDataTable = new DataTable();
+
+                    sqlDataAdapter.Fill(zooDataTable);
+
+                    myTextBox.Text = zooDataTable.Rows[0]["Location"].ToString();
+                }
+
+            }
+            catch (Exception e)
+            {
+                // MessageBox.Show(e.ToString());
+            }
+        } 
+        
+        private void ShowSelectedAnimalInTextBox()
+        {
+            try
+            {
+
+                string query = "select name from animal where Id = @AnimalId";
+
+                SqlCommand sqlCommad = new SqlCommand(query, sqlConnection);
+
+                // the SqlAdapter can be imagined like an Interface to make Tables usable by C#-Objects
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommad);
+
+                using (sqlDataAdapter)
+                {
+
+                    //hand over specific ID, which is based what we have selected in our list box
+                    sqlCommad.Parameters.AddWithValue("@AnimalId", listAllAnimals.SelectedValue);
+
+                    DataTable animalDataTable = new DataTable();
+
+                    sqlDataAdapter.Fill(animalDataTable);
+
+                    myTextBox.Text = animalDataTable.Rows[0]["Name"].ToString();
+                }
+
+            }
+            catch (Exception e)
+            {
+                // MessageBox.Show(e.ToString());
+            }
+        }
+
         private void AddAnimal_Click(Object sender, RoutedEventArgs e)
         {
             try
@@ -218,6 +283,52 @@ namespace WPF_ZooManager
             {
                 sqlConnection.Close();
                 ShowAssociatedAnimals();
+                //MessageBox.Show("Add Animal to Zoo was successful!");
+            }
+        }
+
+        private void updateZoo_Cick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string query = "update Zoo Set Location = @Location where Id = @Zooid";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@ZooId", listZoos.SelectedValue);
+                sqlCommand.Parameters.AddWithValue("@Location", myTextBox.Text);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+                ShowZoos();
+                //MessageBox.Show("Add Animal to Zoo was successful!");
+            }
+        }
+        
+        private void updateAnimal_Cick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string query = "update Animal Set Name = @Name where Id = @AnimalId";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@AnimalId", listAllAnimals.SelectedValue);
+                sqlCommand.Parameters.AddWithValue("@Name", myTextBox.Text);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+                ShowAllAnimals();
                 //MessageBox.Show("Add Animal to Zoo was successful!");
             }
         }
@@ -267,5 +378,11 @@ namespace WPF_ZooManager
             }
         }
 
+
+
+        private void listAllAnimals_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ShowSelectedAnimalInTextBox();
+        }
     }
 }
