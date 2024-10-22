@@ -1,21 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using System.Configuration;
-using System.Data.SqlClient;
-using System.Data;
 
 namespace WPF_ZooManager
 {
@@ -32,6 +20,7 @@ namespace WPF_ZooManager
             string connectionString = ConfigurationManager.ConnectionStrings["WPF_ZooManager.Properties.Settings.ZooDBConnectionString"].ConnectionString;
             sqlConnection = new SqlConnection(connectionString);
             ShowZoos();
+            ShowAllAnimals();
 
         }
 
@@ -40,25 +29,57 @@ namespace WPF_ZooManager
             try
             {
 
-            string query = "select * from Zoo";
-            // the SqlAdapter can be imagined like an Interface to make Tables usable by C#-Objects
-            SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(query, sqlConnection);
+                string query = "select * from Zoo";
+                // the SqlAdapter can be imagined like an Interface to make Tables usable by C#-Objects
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(query, sqlConnection);
 
-            using(sqlDataAdapter)
+                using (sqlDataAdapter)
+                {
+                    DataTable zooTable = new DataTable();
+
+                    sqlDataAdapter.Fill(zooTable);
+
+                    //Which information of the Table in the DataTable shoild be shown in our ListBox?
+                    listZoos.DisplayMemberPath = "Location";
+                    //Which value should be delivered, when an Iten from our ListBox is selected?
+                    listZoos.SelectedValuePath = "Id";
+                    //The Reference to the Data the ListBox should populate
+                    listZoos.ItemsSource = zooTable.DefaultView;
+                }
+
+            }
+            catch (Exception e)
             {
-                DataTable zooTable = new DataTable();
-
-                sqlDataAdapter.Fill(zooTable);
-
-                //Which information of the Table in the DataTable shoild be shown in our ListBox?
-                listZoos.DisplayMemberPath = "Location";
-                //Which value should be delivered, when an Iten from our ListBox is selected?
-                listZoos.SelectedValuePath = "Id";
-                //The Reference to the Data the ListBox should populate
-                listZoos.ItemsSource = zooTable.DefaultView;
+                MessageBox.Show(e.ToString());
             }
 
-            }catch (Exception e)
+        }
+
+        private void ShowAllAnimals()
+        {
+            try
+            {
+
+                string query = "select * from Animal";
+                // the SqlAdapter can be imagined like an Interface to make Tables usable by C#-Objects
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(query, sqlConnection);
+
+                using (sqlDataAdapter)
+                {
+                    DataTable animalTable = new DataTable();
+
+                    sqlDataAdapter.Fill(animalTable);
+
+                    //Which information of the Table in the DataTable shoild be shown in our ListBox?
+                    listAllAnimals.DisplayMemberPath = "Name";
+                    //Which value should be delivered, when an Iten from our ListBox is selected?
+                    listAllAnimals.SelectedValuePath = "Id";
+                    //The Reference to the Data the ListBox should populate
+                    listAllAnimals.ItemsSource = animalTable.DefaultView;
+                }
+
+            }
+            catch (Exception e)
             {
                 MessageBox.Show(e.ToString());
             }
@@ -71,8 +92,8 @@ namespace WPF_ZooManager
             {
 
                 string query = "select * from Animal a inner join ZooAnimal " +
-                    "za on a.Id = za.animalId where za.ZooId = @ZooId"; 
-                
+                    "za on a.Id = za.animalId where za.ZooId = @ZooId";
+
                 SqlCommand sqlCommad = new SqlCommand(query, sqlConnection);
 
                 // the SqlAdapter can be imagined like an Interface to make Tables usable by C#-Objects
@@ -99,7 +120,7 @@ namespace WPF_ZooManager
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.ToString());
+                // MessageBox.Show(e.ToString());
             }
 
         }
@@ -110,5 +131,141 @@ namespace WPF_ZooManager
             //MessageBox.Show(listZoos.SelectedValue.ToString());
             ShowAssociatedAnimals();
         }
+
+        private void DeleteZoo_Click(object sender, RoutedEventArgs e)
+        {
+
+            try
+            {
+                string query = "delete from Zoo where id = @ZooId";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@ZooId", listZoos.SelectedValue);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+                ShowZoos();
+                //MessageBox.Show("Delete Zoo was succesful!");
+            }
+        }
+
+        private void AddZoo_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string query = "insert into Zoo values (@Location)";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@Location", myTextBox.Text);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+                ShowZoos();
+                //MessageBox.Show("Add Zoo was succesful!");
+            }
+        }
+
+        private void AddAnimal_Click(Object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string query = "insert into Animal values (@Name)";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@Name", myTextBox.Text);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+                ShowAllAnimals();
+                //MessageBox.Show("Animal was added succesful!");
+            }
+        }
+
+        private void addAnimalToZoo_Cick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string query = "insert into ZooAnimal values (@ZooId, @AnimalId)";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@ZooId", listZoos.SelectedValue);
+                sqlCommand.Parameters.AddWithValue("@AnimalId", listAllAnimals.SelectedValue);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+                ShowAssociatedAnimals();
+                //MessageBox.Show("Add Animal to Zoo was successful!");
+            }
+        }
+
+        private void deleteAnimal_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string query = "delete from Animal where id = @AnimalId";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@AnimalId", listAllAnimals.SelectedValue);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+                ShowAllAnimals();
+                //MessageBox.Show("Delete Animal from Table was succesful!");
+            }
+        }
+
+        private void removeAnimalFromZoo_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string query = "delete from ZooAnimal where AnimalId = @AnimalId and ZooId = @ZooId";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@AnimalId", listAssociatedAnimals.SelectedValue);
+                sqlCommand.Parameters.AddWithValue("@ZooId", listZoos.SelectedValue);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+                ShowAssociatedAnimals();
+                //MessageBox.Show("Remove Animal from Zoo was succesful!");
+            }
+        }
+
     }
 }
